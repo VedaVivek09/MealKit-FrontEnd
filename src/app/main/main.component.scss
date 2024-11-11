@@ -1,0 +1,148 @@
+.flex-container{
+    display: flex;
+}
+.flex-item1{
+    border: 3px solid red;
+    
+}
+.flex-item2{
+    border: 3px solid green;
+    
+}
+   
+.flex-item3{
+    border: 3px solid yellow;
+    
+    
+}
+
+.meal-kit-analysis {
+    min-height: 100vh;
+    background-image: url('/assets/food-background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 2rem;
+    color: #333;
+    font-family: 'Arial', sans-serif;
+  
+    .title {
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #3a2c2c;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+  
+    .search-section,
+    .requirements-section,
+    .results-section,
+    .word-frequency-section,
+    .search-history-section {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+      }
+    }
+  
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+  
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+  
+      label {
+        font-weight: bold;
+      }
+  
+      input[type="text"],
+      input[type="number"],
+      select {
+        padding: 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+  
+      button {
+        background-color: #3498db;
+        color: white;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+  
+        &:hover {
+          background-color: #2980b9;
+        }
+      }
+    }
+  
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+  
+      th, td {
+        border: 1px solid #ddd;
+        padding: 0.75rem;
+        text-align: left;
+      }
+  
+      th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+      }
+  
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+    }
+  
+    .error {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+  
+    // Animations
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  
+    .search-section > div,
+    .results-section,
+    .word-frequency-section,
+    .search-history-section {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+  }
+  
+  // Responsive design
+  @media (max-width: 768px) {
+    .meal-kit-analysis {
+      padding: 1rem;
+  
+      .title {
+        font-size: 2rem;
+      }
+  
+      table {
+        font-size: 0.9rem;
+      }
+    }
+  }

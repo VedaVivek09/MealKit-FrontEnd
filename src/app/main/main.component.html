@@ -1,0 +1,121 @@
+<div class="meal-kit-analysis">
+  <h1 class="title">Meal Kit Analysis and Recommendation System</h1>
+
+  <div class="search-section">
+    <h2>Search Meal Kit Services</h2>
+    <form [formGroup]="searchForm" (ngSubmit)="searchRecipes()">
+      <input type="text" formControlName="searchTerm" placeholder="Enter search terms...">
+      <button type="submit" [disabled]="!searchForm.valid">Search</button>
+    </form>
+    <div *ngIf="spellCheckResults.length > 0" [@fadeInOut]>
+      <p class="error">Possible misspellings: {{ spellCheckResults.join(', ') }}</p>
+    </div>
+    <div *ngIf="wordCompletions.length > 0" [@fadeInOut]>
+      <p>Word completions: {{ wordCompletions.join(', ') }}</p>
+    </div>
+  </div>
+
+  <div class="requirements-section">
+    <h2>Your Requirements</h2>
+    <form [formGroup]="requirementsForm" (ngSubmit)="generateRecommendations()">
+      <div class="form-group">
+        <label for="maxWeeklyCost">Max Weekly Cost ($)</label>
+        <input type="number" id="maxWeeklyCost" formControlName="maxWeeklyCost">
+      </div>
+      <div class="form-group">
+        <label for="minMealsPerWeek">Min Meals per Week</label>
+        <input type="number" id="minMealsPerWeek" formControlName="minMealsPerWeek">
+      </div>
+      <div class="form-group">
+        <label for="minServingsPerMeal">Min Servings per Meal</label>
+        <input type="number" id="minServingsPerMeal" formControlName="minServingsPerMeal">
+      </div>
+      <div class="form-group">
+        <label for="deliveryFrequency">Delivery Frequency</label>
+        <select id="deliveryFrequency" formControlName="deliveryFrequency">
+          <option value="Weekly">Weekly</option>
+          <option value="Bi-Weekly">Bi-Weekly</option>
+        </select>
+      </div>
+      <div formGroupName="dietaryPreferences">
+        <h3>Dietary Preferences</h3>
+        <label><input type="checkbox" formControlName="vegetarian"> Vegetarian</label>
+        <label><input type="checkbox" formControlName="vegan"> Vegan</label>
+        <label><input type="checkbox" formControlName="keto"> Keto</label>
+        <label><input type="checkbox" formControlName="glutenFree"> Gluten-Free</label>
+      </div>
+      <div formGroupName="ingredientQualities">
+        <h3>Ingredient Qualities</h3>
+        <label><input type="checkbox" formControlName="organic"> Organic</label>
+        <label><input type="checkbox" formControlName="local"> Local</label>
+        <label><input type="checkbox" formControlName="sustainable"> Sustainable</label>
+      </div>
+      <button type="submit">Generate Recommendations</button>
+    </form>
+  </div>
+
+  <div class="results-section">
+    <h2>Recommended Meal Kit Services</h2>
+    <table *ngIf="filteredServices.length > 0; else noResults">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Cooking Time</th>
+          <th>Serves</th>
+          <th>Price</th>
+          <th>Dietary Options</th>
+          <th>Image</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let service of filteredServices">
+          <td>{{ service.name }}</td>
+          <td>{{ service.cookingTime }}</td>
+          <td>{{ service.serves }}</td>
+          <td>{{ service.price }}</td>
+          <td>{{ service.dietaryOptions.join(', ') }}</td>
+          <td><img [src]="service.imageUrl" alt="{{ service.name }}" width="100"></td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noResults>
+      <p>No results found. Try adjusting your search terms or criteria.</p>
+    </ng-template>
+  </div>
+
+  <div class="word-frequency-section">
+    <h2>Word Frequency</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Word</th>
+          <th>Frequency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of frequencyCount | keyvalue">
+          <td>{{ item.key }}</td>
+          <td>{{ item.value }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="search-history-section">
+    <h2>Search History</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Word</th>
+          <th>Search Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of searchFrequency | keyvalue">
+          <td>{{ item.key }}</td>
+          <td>{{ item.value }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
