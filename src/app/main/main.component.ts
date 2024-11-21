@@ -27,6 +27,9 @@ export class MainComponent implements OnInit {
   recommendations: any[] = [];
   spellCheckResults: string[] = [];
   wordCompletions: string[] = [];
+  
+  wordSuggested: String[] = [];
+
   frequencyCount: { [key: string]: number } = {};
   searchFrequency: { [key: string]: number } = {};
 
@@ -56,13 +59,17 @@ export class MainComponent implements OnInit {
 
   ngOnInit() {
     // Fetch all data on component initialization
-    this.http.get<any[]>('http://localhost:8080/getAllRecipes')
-      .subscribe(data => {
+    this.http.get<any[]>('http://localhost:8080/getAllRecipes').subscribe(
+      (data) => {
         this.mealKitServices = data;
         this.filteredServices = data; // Initialize with all data
-      });
+      },
+      (error) => {
+        console.error('Error fetching data:', error);
+      }
+    );
 
-    this.searchForm.get('searchTerm')?.valueChanges.subscribe(term => {
+    this.searchForm.get('searchTerm')?.valueChanges.subscribe((term) => {
       if (term) {
         this.handleSearch(term);
       }
@@ -80,12 +87,17 @@ export class MainComponent implements OnInit {
 
     // Call getWordCompletions to retrieve suggestions
     this.getWordCompletions(term);
+    this.getSuggestedWord(term);
 
     // Call backend for recipe search
-    this.http.post<any[]>(`http://localhost:8080/search/recipes?query=${term}`, {})
-      .subscribe(data => {
+    this.http.post<any[]>(`http://localhost:8080/search/recipes?query=${term}`, {}).subscribe(
+      (data) => {
         this.filteredServices = data;
-      });
+      },
+      (error) => {
+        console.error('Error during recipe search:', error);
+      }
+    );
 
     // Frequency count and search history updates
     const words = term.toLowerCase().split(/\s+/);
@@ -94,30 +106,49 @@ export class MainComponent implements OnInit {
       return acc;
     }, {} as { [key: string]: number });
 
-    words.forEach(word => {
+    words.forEach((word) => {
       this.searchFrequency[word] = (this.searchFrequency[word] || 0) + 1;
     });
   }
 
   searchRecipes() {
     const term = this.searchForm.get('searchTerm')?.value;
-    this.http.post<any[]>(`http://localhost:8080/search/recipes?query=${term}`, {})
-      .subscribe(data => {
+    this.http.post<any[]>(`http://localhost:8080/search/recipes?query=${term}`, {}).subscribe(
+      (data) => {
         this.filteredServices = data;
-      });
+      },
+      (error) => {
+        console.error('Error during search:', error);
+      }
+    );
   }
-  
+
   getWordCompletions(term: string) {
-    this.http.get<string[]>(`http://localhost:8080/search/suggestions?prefix=${term}`)
-      .subscribe(data => {
+    this.http.get<string[]>(`http://localhost:8080/search/suggestions?prefix=${term}`).subscribe(
+      (data) => {
         this.wordCompletions = data;
-      });
+      },
+      (error) => {
+        console.error('Error fetching word completions:', error);
+      }
+    );
+  }
+
+  getSuggestedWord(term: string) {
+    this.http.get<string[]>(`http://localhost:8080/search11/suggestedwords?prefix=${term}`).subscribe(
+      (data) => {
+        this.wordSuggested = data;
+      },
+      (error) => {
+        console.error('Error fetching suggested words:', error);
+      }
+    );
   }
 
   generateRecommendations() {
     const requirements = this.requirementsForm.value;
     this.recommendations = this.mealKitServices
-      .filter(service =>
+      .filter((service) =>
         service.weeklyCost <= requirements.maxWeeklyCost &&
         service.mealsPerWeek >= requirements.minMealsPerWeek &&
         service.servingsPerMeal >= requirements.minServingsPerMeal &&
@@ -131,10 +162,12 @@ export class MainComponent implements OnInit {
         (!requirements.ingredientQualities.sustainable || service.sustainable)
       )
       .sort((a, b) => {
-        const aScore = Object.values(requirements.dietaryPreferences).filter(Boolean).length +
-                       Object.values(requirements.ingredientQualities).filter(Boolean).length;
-        const bScore = Object.values(requirements.dietaryPreferences).filter(Boolean).length +
-                       Object.values(requirements.ingredientQualities).filter(Boolean).length;
+        const aScore =
+          Object.values(requirements.dietaryPreferences).filter(Boolean).length +
+          Object.values(requirements.ingredientQualities).filter(Boolean).length;
+        const bScore =
+          Object.values(requirements.dietaryPreferences).filter(Boolean).length +
+          Object.values(requirements.ingredientQualities).filter(Boolean).length;
         return bScore - aScore;
       });
 

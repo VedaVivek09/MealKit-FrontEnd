@@ -1,7 +1,7 @@
 <div class="meal-kit-analysis">
   <h1 class="title">Meal Kit Analysis and Recommendation System</h1>
 
-  <div class="search-section">
+ <div class="search-section">
     <h2>Search Meal Kit Services</h2>
     <form [formGroup]="searchForm" (ngSubmit)="searchRecipes()">
       <input type="text" formControlName="searchTerm" placeholder="Enter search terms...">
@@ -10,10 +10,17 @@
     <div *ngIf="spellCheckResults.length > 0" [@fadeInOut]>
       <p class="error">Possible misspellings: {{ spellCheckResults.join(', ') }}</p>
     </div>
-    <div *ngIf="wordCompletions.length > 0" [@fadeInOut]>
+    <div >
       <p>Word completions: {{ wordCompletions.join(', ') }}</p>
     </div>
-  </div>
+
+    <div >
+      <p>Alternate Suggested Words: {{ wordSuggested.join(', ') }}</p>
+    </div>
+  </div> 
+
+  
+  
 
   <div class="requirements-section">
     <h2>Your Requirements</h2>
