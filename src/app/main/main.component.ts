@@ -2,6 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
+interface SearchHistoryItem {
+  word: string;
+  frequency: number;
+}
+
+export interface SearchResponse {
+  recipes: any[];
+  wordCount: number;
+  wordFrequencies: { [key: string]: number };
+}
 
 @Component({
   selector: 'app-main',
@@ -32,6 +44,22 @@ export class MainComponent implements OnInit {
 
   frequencyCount: { [key: string]: number } = {};
   searchFrequency: { [key: string]: number } = {};
+
+  searchHistory: SearchHistoryItem[] = [];
+  searchWordCount: number = 0;
+  scrapedDataFrequencies: { [key: string]: number } = {};
+
+  searchRecipes() {
+    const term = this.searchForm.get('searchTerm')?.value;
+    
+    this.http.post<SearchResponse>(`http://localhost:8080/search/recipes?query=${term}`, {})
+      .subscribe(response => {
+        this.filteredServices = response.recipes;
+        this.searchWordCount = response.wordCount;
+        this.scrapedDataFrequencies = response.wordFrequencies;
+        this.updateSearchHistory(term);
+      });
+  }
 
   constructor(private fb: FormBuilder, private http: HttpClient) {
     this.searchForm = this.fb.group({
@@ -69,11 +97,17 @@ export class MainComponent implements OnInit {
       }
     );
 
-    this.searchForm.get('searchTerm')?.valueChanges.subscribe((term) => {
+    this.searchForm.get('searchTerm')?.valueChanges .pipe(
+      debounceTime(800), // Wait for 800ms after typing stops
+      distinctUntilChanged() // Ensure the term is different from the last
+    ).subscribe((term) => {
       if (term) {
-        this.handleSearch(term);
+        this.handleSearch(term.trim());
       }
     });
+
+    // Fetch and display search history
+    this.fetchSearchHistory();
   }
 
   handleSearch(term: string) {
@@ -85,8 +119,12 @@ export class MainComponent implements OnInit {
       return;
     }
 
+    // Update search history on the backend
+    this.updateSearchHistory(term);
+
     // Call getWordCompletions to retrieve suggestions
     this.getWordCompletions(term);
+
     this.getSuggestedWord(term);
 
     // Call backend for recipe search
@@ -99,28 +137,39 @@ export class MainComponent implements OnInit {
       }
     );
 
-    // Frequency count and search history updates
-    const words = term.toLowerCase().split(/\s+/);
-    this.frequencyCount = words.reduce((acc, word) => {
-      acc[word] = (acc[word] || 0) + 1;
-      return acc;
-    }, {} as { [key: string]: number });
+  }
 
-    words.forEach((word) => {
-      this.searchFrequency[word] = (this.searchFrequency[word] || 0) + 1;
+  // New method to update search history
+  updateSearchHistory(term: string) {
+  this.http.post('http://localhost:8080/search/updateSearchHistory', { query: term })
+    .subscribe({
+      next: () => {
+        // Refresh search history after updating
+        this.fetchSearchHistory();
+      },
+      error: (err) => {
+        console.error('Error updating search history', err);
+      }
     });
   }
 
-  searchRecipes() {
-    const term = this.searchForm.get('searchTerm')?.value;
-    this.http.post<any[]>(`http://localhost:8080/search/recipes?query=${term}`, {}).subscribe(
-      (data) => {
-        this.filteredServices = data;
-      },
-      (error) => {
-        console.error('Error during search:', error);
-      }
-    );
+  // New method to fetch search history
+  fetchSearchHistory() {
+    this.http.get<{ word: string, frequency: number }[]>('http://localhost:8080/search/searchHistory')
+      .subscribe({
+        next: (history) => {
+          this.searchHistory = this.uniqueByWord(history); // Deduplicate history here
+        },
+        error: (err) => {
+          console.error('Error fetching search history', err);
+        }
+      });
+  }
+
+  uniqueByWord(history: SearchHistoryItem[]): SearchHistoryItem[] {
+    const uniqueHistory = new Map<string, SearchHistoryItem>();
+    history.forEach(item => uniqueHistory.set(item.word, item));
+    return Array.from(uniqueHistory.values());
   }
 
   getWordCompletions(term: string) {
