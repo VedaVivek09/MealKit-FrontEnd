@@ -13,6 +13,19 @@
     <div >
       <p>Word completions: {{ wordCompletions.join(', ') }}</p>
     </div>
+    <div *ngFor="let item of scrapedDataFrequencies | keyvalue" class="frequency-item">
+      <p>Word: {{ item.key }} - Frequency: {{ item.value }}</p>
+    </div>
+    <div>
+      <table>
+        <tbody>
+          <tr *ngFor="let item of searchHistory">
+            <td>{{ item.word }}</td>
+            <td>{{ item.frequency}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <div >
       <p>Alternate Suggested Words: {{ wordSuggested.join(', ') }}</p>
